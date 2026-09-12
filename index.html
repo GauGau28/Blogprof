@@ -240,6 +240,90 @@
     font-size:13px;
     color:rgba(246,241,228,0.5);
   }
+
+  /* ORDER FORM MODAL */
+  .order-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(20,30,25,0.6);
+    z-index:100;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .order-overlay.open{display:flex;}
+  .order-modal{
+    background:#fff;
+    border-radius:6px;
+    max-width:420px;
+    width:100%;
+    max-height:90vh;
+    overflow-y:auto;
+    padding:28px 24px;
+    position:relative;
+  }
+  .order-close{
+    position:absolute;
+    top:14px; right:14px;
+    background:none;
+    border:none;
+    font-size:18px;
+    color:var(--chalkboard-dark);
+    cursor:pointer;
+    line-height:1;
+  }
+  .order-modal h3{
+    font-size:22px;
+    color:var(--chalkboard);
+    margin-bottom:6px;
+  }
+  .order-product{
+    font-size:14px;
+    color:var(--wood-dark);
+    font-weight:600;
+    margin-bottom:18px;
+  }
+  .order-modal label{
+    display:block;
+    font-size:13px;
+    font-weight:500;
+    color:var(--chalkboard-dark);
+    margin-bottom:14px;
+  }
+  .order-modal input,
+  .order-modal textarea{
+    display:block;
+    width:100%;
+    margin-top:6px;
+    padding:10px 12px;
+    border:1px solid rgba(47,69,56,0.2);
+    border-radius:3px;
+    font-family:'Work Sans', sans-serif;
+    font-size:14px;
+    color:var(--chalkboard-dark);
+    background:var(--chalk);
+  }
+  .order-modal textarea{resize:vertical;}
+  .order-submit{
+    width:100%;
+    background:var(--chalkboard);
+    color:#fff;
+    border:none;
+    padding:13px;
+    border-radius:3px;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  .order-submit:hover{background:var(--chalkboard-dark);}
+  .order-note{
+    font-size:12px;
+    color:rgba(47,69,56,0.6);
+    margin-top:12px;
+    line-height:1.5;
+  }
 </style>
 </head>
 <body>
@@ -278,7 +362,7 @@
         <p class="custom">Couleur au choix — personnalisation gratuite</p>
         <div class="price-row">
           <span class="price">à partir de 1,00 €</span>
-          <span class="add">Ajouter</span>
+          <span class="add" onclick="openOrderForm('Plaque de bureau personnalisée')">Ajouter</span>
         </div>
       </div>
     </div>
@@ -292,7 +376,7 @@
         <p class="custom">Couleur au choix — personnalisation gratuite</p>
         <div class="price-row">
           <span class="price">à partir de 10,00 €</span>
-          <span class="add">Ajouter</span>
+          <span class="add" onclick="openOrderForm('Organisateur de bureau')">Ajouter</span>
         </div>
       </div>
     </div>
@@ -306,7 +390,7 @@
         <p class="custom">Couleur au choix — personnalisation gratuite</p>
         <div class="price-row">
           <span class="price">à partir de 3,00 €</span>
-          <span class="add">Ajouter</span>
+          <span class="add" onclick="openOrderForm('Marque-page fermeture éclair')">Ajouter</span>
         </div>
       </div>
     </div>
@@ -319,7 +403,7 @@
         <p class="custom">Couleur au choix — personnalisation gratuite</p>
         <div class="price-row">
           <span class="price">4,00 €</span>
-          <span class="add">Ajouter</span>
+          <span class="add" onclick="openOrderForm('Calendrier du Prof 2027')">Ajouter</span>
         </div>
       </div>
     </div>
@@ -333,7 +417,7 @@
         <p class="custom">Couleur au choix — personnalisation gratuite</p>
         <div class="price-row">
           <span class="price">à partir de 17,00 €</span>
-          <span class="add">Ajouter</span>
+          <span class="add" onclick="openOrderForm('Work Station — organisateur modulaire')">Ajouter</span>
         </div>
       </div>
     </div>
@@ -356,7 +440,6 @@
   </div>
 </section>
 
-
 <footer id="contact">
   <span class="logo">Blog<span>Prof</span></span>
   <p>Une question sur un produit, une envie de personnalisation ou une commande groupée pour votre établissement ? Écrivez-nous.</p>
@@ -364,5 +447,74 @@
   <div class="bottom">© 2026 Blog Prof — tous droits réservés</div>
 </footer>
 
+<div id="orderOverlay" class="order-overlay">
+  <div class="order-modal">
+    <button class="order-close" onclick="closeOrderForm()">✕</button>
+    <h3>Passer commande</h3>
+    <p class="order-product" id="orderProductName"></p>
+
+    <label>Votre nom
+      <input type="text" id="orderName" placeholder="Prénom et nom">
+    </label>
+    <label>Votre email
+      <input type="email" id="orderEmail" placeholder="vous@exemple.com">
+    </label>
+    <label>Quantité
+      <input type="number" id="orderQty" value="1" min="1">
+    </label>
+    <label>Message (personnalisation, adresse de livraison...)
+      <textarea id="orderMessage" rows="3" placeholder="Précisez ici le prénom à graver, votre adresse, etc."></textarea>
+    </label>
+
+    <button class="order-submit" onclick="submitOrder()">Envoyer la commande</button>
+    <p class="order-note">En envoyant, votre messagerie s'ouvre avec la commande pré-remplie, prête à envoyer à blogprof01@gmail.com. Le paiement (par virement bancaire) sera précisé par retour d'email.</p>
+  </div>
+</div>
+
+<script>
+  var currentProduct = '';
+
+  function openOrderForm(productName) {
+    currentProduct = productName;
+    document.getElementById('orderProductName').textContent = productName;
+    document.getElementById('orderName').value = '';
+    document.getElementById('orderEmail').value = '';
+    document.getElementById('orderQty').value = '1';
+    document.getElementById('orderMessage').value = '';
+    document.getElementById('orderOverlay').classList.add('open');
+  }
+
+  function closeOrderForm() {
+    document.getElementById('orderOverlay').classList.remove('open');
+  }
+
+  function submitOrder() {
+    var name = document.getElementById('orderName').value.trim();
+    var email = document.getElementById('orderEmail').value.trim();
+    var qty = document.getElementById('orderQty').value;
+    var message = document.getElementById('orderMessage').value.trim();
+
+    if (!name || !email) {
+      alert('Merci de remplir votre nom et votre email avant d\'envoyer la commande.');
+      return;
+    }
+
+    var subject = 'Commande Blog Prof — ' + currentProduct;
+    var body =
+      'Produit : ' + currentProduct + '\n' +
+      'Quantité : ' + qty + '\n' +
+      'Nom : ' + name + '\n' +
+      'Email : ' + email + '\n' +
+      'Message : ' + (message || '(aucun)');
+
+    var mailtoLink = 'mailto:blogprof01@gmail.com?subject=' +
+      encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+
+    window.location.href = mailtoLink;
+    closeOrderForm();
+  }
+</script>
+
 </body>
 </html>
+
